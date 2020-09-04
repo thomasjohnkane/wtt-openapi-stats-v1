@@ -1,0 +1,929 @@
+openapi: 3.0.0
+info:
+  title: WTT Stats API
+  version: '1.0'
+  description: Sample API Schema for WTT to provide stats to PumpJack Dataworks
+  contact:
+    name: PumpJack Dataworks
+    url: 'https://pumpjackdataworks.com/contact'
+    email: thomas@pumpjackdataworks.com
+  termsOfService: 'https://pumpjackdataworks.com/privacy'
+servers:
+  - url: 'http://localhost:3000'
+tags:
+  - name: event
+    description: Everything related to events
+  - name: match
+    description: Everything related to matches
+  - name: game
+    description: Everything related to games
+  - name: participant
+    description: Everything related to participants
+  - name: pair
+    description: Everything related to pairs
+  - name: team
+    description: Everything related to teams
+  - name: stats
+    description: Everything that returns stats
+paths:
+  /participants:
+    get:
+      summary: Participants
+      tags:
+        - participant
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Participant'
+      operationId: get-players
+      description: Return a list of all Participants or a list of filtered Participants
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: start_date
+          description: Return participants that were created on or after this date (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: end_date
+          description: Return participants that were created on or before this date (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: search
+          description: Filters participants by name or country
+    parameters: []
+  '/participants/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Participant
+      tags:
+        - participant
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Participant'
+        '422':
+          description: Unprocessable Entity (WebDAV) - This Participany does not exist
+      operationId: get-players-id
+      description: Return a single Participant by ID
+  /events:
+    get:
+      summary: Events
+      tags:
+        - event
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Event'
+      operationId: get-events
+      description: Return a list of all Events or a list of filtered Events
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: start_date
+          description: Return events that happened on or after this date (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: end_date
+          description: Return events that happened on or before this date (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: search
+          description: Return events that match this search string (likely used to search event name)
+    parameters: []
+  '/events/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Event
+      tags:
+        - event
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Event'
+        '422':
+          description: Unprocessable Entity (WebDAV) - This event does not exist
+      operationId: get-events-id
+      description: Return a single Event by ID
+  /matches:
+    get:
+      summary: Matches
+      tags:
+        - match
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Match'
+      operationId: get-matches
+      description: Return a list of all Matches or a list of filtered Matches
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: start_date
+          description: Return matches that happened on or after this date (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: end_date
+          description: Return matches that happened on or before this date (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: search
+          description: Return matches that match this search string
+  '/matches/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Match
+      tags:
+        - match
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Match'
+        '422':
+          description: Unprocessable Entity (WebDAV) - This match does not exist
+      operationId: get-matches-id
+      description: Return a single Match by ID
+  '/participants/{id}/stats':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Participant Stats
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsApiResponse'
+        '422':
+          description: Unprocessable Entity (WebDAV) - Used when the participant is not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsApiResponse'
+      operationId: get-participant-id-stats
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: start_date
+          description: The start date for when stats should be calculated (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: end_date
+          description: The end date for when stats should be calculated (yyyy-mm-dd)
+      description: Returns a stats object for the given participant ID
+      tags:
+        - participant
+        - stats
+  '/events/{event_id}/participants/{participant_id}/stats':
+    parameters:
+      - schema:
+          type: string
+        name: event_id
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: participant_id
+        in: path
+        required: true
+    get:
+      summary: Event Stats for a Participant
+      tags:
+        - event
+        - stats
+        - participant
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsApiResponse'
+        '422':
+          description: Unprocessable Entity (WebDAV) - Event not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsApiResponse'
+      operationId: get-events-id-stats-for-participant
+      description: Return the Stats object for a given Participant during a given Event
+      parameters: []
+  '/events/{event_id}/pairs/{pair_id}/stats':
+    parameters:
+      - schema:
+          type: string
+        name: event_id
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: pair_id
+        in: path
+        required: true
+    get:
+      summary: Event Stats for a Pair
+      tags:
+        - event
+        - stats
+        - pair
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsApiResponse'
+        '422':
+          description: Unprocessable Entity (WebDAV) - Event or Pair not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsApiResponse'
+      operationId: get-events-id-stats-for-pair
+      description: Return the Stats object for a given Pair during a given Event
+      parameters: []
+  '/pairs/{id}/stats':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Pair Stats
+      tags:
+        - stats
+        - pair
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsApiResponse'
+        '422':
+          description: Unprocessable Entity (WebDAV) - Pair not found
+      operationId: get-pair-stats
+      description: Returns a stats object for the given Pair ID
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: start_date
+          description: The start date for when stats should be calculated (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: end_date
+          description: The end date for when stats should be calculated (yyyy-mm-dd)
+  /pairs:
+    get:
+      summary: Pairs
+      tags:
+        - pair
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Pair'
+      operationId: get-pairs
+      description: Return a list of all Pairs or a list of filtered Pairs
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: start_date
+          description: Return pairs that were created on or after this date (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: end_date
+          description: Return pairs that were created on or before this date (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: search
+          description: Filters pairs by name or country
+  '/pairs/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Pair
+      tags:
+        - pair
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pair'
+        '422':
+          description: Unprocessable Entity (WebDAV) - Pair not found
+      operationId: get-pairs-id
+      description: Return a single Pair
+  /teams:
+    get:
+      summary: Teams
+      tags:
+        - team
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Team'
+      operationId: get-teams
+      description: Return a list of all Teams or a list of filtered Teams
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: start_date
+          description: Return teams that were created on or after this date (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: end_date
+          description: Return teams that were created on or before this date (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: search
+          description: Filters teams by name or country
+  '/teams/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Team
+      tags:
+        - team
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Team'
+        '422':
+          description: Unprocessable Entity (WebDAV) - This Team was not found
+      operationId: get-teams-id
+      description: Return a single Team
+  '/teams/{id}/stats':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Team Stats
+      tags:
+        - team
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsApiResponse'
+        '422':
+          description: Unprocessable Entity (WebDAV) - Team not found
+      operationId: get-teams-id-stats
+      description: Returns a stats object for the given Team ID
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: start_date
+          description: The start date for when stats should be calculated (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: end_date
+          description: The end date for when stats should be calculated (yyyy-mm-dd)
+  '/matches/{match_id}/participants/{participant_id}/stats':
+    parameters:
+      - schema:
+          type: string
+        name: match_id
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: participant_id
+        in: path
+        required: true
+    get:
+      summary: Match Stats for a given Participant
+      tags:
+        - match
+        - stats
+        - participant
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsApiResponse'
+        '422':
+          description: "Unprocessable Entity (WebDAV) - This Match or Participant doesn't exist"
+      operationId: get-matches-id-stats-by-participant
+      description: Return the Stats object for a given Participant during a given Match
+      parameters: []
+  '/matches/{match_id}/pairs/{pair_id}/stats':
+    parameters:
+      - schema:
+          type: string
+        name: match_id
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: pair_id
+        in: path
+        required: true
+    get:
+      summary: Match Stats for a given Pair
+      tags:
+        - match
+        - stats
+        - pair
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsApiResponse'
+        '422':
+          description: "Unprocessable Entity (WebDAV) - This Match or Pair doesn't exist"
+      operationId: get-matches-id-stats-by-pair
+      description: Return the Stats object for a given Pair during a given Match
+      parameters: []
+  /games:
+    get:
+      summary: Games
+      tags:
+        - game
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Game'
+      operationId: get-games
+      description: Return a list of all Games or a list of filtered Games
+      parameters:
+        - schema:
+            type: string
+          in: query
+          name: start_date
+          description: Return games that happened on or after this date (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: end_date
+          description: Return games that happened on or before this date (yyyy-mm-dd)
+        - schema:
+            type: string
+          in: query
+          name: search
+          description: Return games that match this search string
+  '/games/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Game
+      tags:
+        - game
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Game'
+        '422':
+          description: Unprocessable Entity (WebDAV) - Game not found
+      operationId: get-games-id
+      description: Return a single Game by ID
+  '/games/{game_id}/participants/{participant_id}/stats':
+    parameters:
+      - schema:
+          type: string
+        name: game_id
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: participant_id
+        in: path
+        required: true
+    get:
+      summary: Game Stats for a given Participant
+      tags:
+        - game
+        - stats
+        - participant
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsApiResponse'
+        '422':
+          description: Unprocessable Entity (WebDAV) - Game or Participant not found
+      operationId: get-games-id-stats-by-participant
+      description: Return the Stats object for a given Participant during a given Game
+      parameters: []
+  '/games/{game_id}/pairs/{pair_id}/stats':
+    parameters:
+      - schema:
+          type: string
+        name: game_id
+        in: path
+        required: true
+      - schema:
+          type: string
+        name: pair_id
+        in: path
+        required: true
+    get:
+      summary: Game Stats for a given pair
+      tags:
+        - game
+        - stats
+        - pair
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/StatsApiResponse'
+        '422':
+          description: Unprocessable Entity (WebDAV) - Game or Pair not found
+      operationId: get-games-id-stats
+      description: Return the Stats object for a given Pair during a given Game
+      parameters: []
+components:
+  schemas:
+    Participant:
+      title: Participant
+      type: object
+      description: A player that is participating in an Event
+      x-tags:
+        - participant
+      properties:
+        id:
+          type: string
+        given_name:
+          type: string
+        family_name:
+          type: string
+        family_name_first:
+          type: string
+        gender:
+          type: string
+        dob:
+          type: string
+        handedness:
+          type: string
+        grip:
+          type: string
+        style:
+          type: string
+        equipment_sponsor:
+          type: string
+        blade_type:
+          type: string
+        racket_coloring_a:
+          type: string
+        racket_coloring_b:
+          type: string
+        racket_covering_a:
+          type: string
+        racket_covering_b:
+          type: string
+        active_since:
+          type: string
+          description: "Date of player's first game (yyyy-mm-dd)"
+    Event:
+      title: Event
+      type: object
+      description: This represents an Event
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        venue:
+          type: string
+        city:
+          type: string
+        region:
+          type: string
+          description: State or Province
+        nation:
+          type: string
+        long_name:
+          type: string
+        type:
+          type: string
+        start_date:
+          type: string
+        end_date:
+          type: string
+      x-tags:
+        - event
+    Match:
+      title: Match
+      type: object
+      description: This represents a Match within an Event
+      properties:
+        id:
+          type: string
+        event_id:
+          type: string
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+        start_time:
+          type: string
+        end_time:
+          type: string
+        table_number:
+          type: integer
+        current_score:
+          type: object
+          description: Placeholder object that could optionally provide live scoring information
+      x-tags:
+        - match
+    Game:
+      title: Game
+      type: object
+      description: This represents a Game within a Match
+      properties:
+        id: {}
+        match_id:
+          description: Foreign key reference to the match this game is a part of
+          type: string
+        event_id:
+          type: string
+          description: Foreign key reference to the event this game is a part of
+        start_time:
+          type: string
+        end_time:
+          type: string
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+        current_score:
+          type: object
+          description: Placeholder object that could optionally provide live scoring information
+      x-tags:
+        - game
+    Pair:
+      title: Pair
+      type: object
+      description: A set of two participants playing in a doubles format
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+      x-tags:
+        - pair
+    Team:
+      title: Team
+      type: object
+      description: A Team consists of many Participants and usually grouped by nationality/country
+      properties:
+        id:
+          type: string
+        nationality:
+          type: string
+        participants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Participant'
+      x-tags:
+        - team
+    StatsApiResponse:
+      title: StatsApiResponse
+      type: object
+      description: This respresents the successful response for a stats request
+      x-tags:
+        - stats
+      properties:
+        total_wins:
+          type: integer
+          description: Total match wins for time period and specified entities
+        total_losses:
+          type: integer
+          description: Total match losses for time period and specified entities
+        tournament_wins:
+          type: integer
+          description: Total major tournament event wins for time period and specified entities
+        tournament_losses:
+          type: integer
+          description: Total major tournament event losses for time period and specified entities
+        finals_wins:
+          type: integer
+          description: Total event final match wins for time period and specified entities
+        finals_losses:
+          type: integer
+          description: Total event final match losses for time period and specified entities
+        against_top_10_participant_wins:
+          type: integer
+          description: Total match wins against top 10 participants (based on ranking at beginning of event)
+        against_top_10_participant_losses:
+          type: integer
+          description: Total match losses against top 10 participants (based on ranking at beginning of event)
+        points_won:
+          type: integer
+          description: Total points won by the participant during the specific timeframe and entities.
+        ace_points_won:
+          type: integer
+          description: A point won without a successful return by the opponent.
+        ace_points_lost:
+          type: integer
+          description: 'A point lost by not successfully returning an opponent serve. '
+        points_won_on_own_serve:
+          type: integer
+          description: Points won by participant after having served
+        points_lost_on_own_serve:
+          type: integer
+          description: points lost by participant after having served on this point
+        points_won_on_opponent_serve:
+          type: integer
+          description: points lost by participant after having served on this point
+        points_lost_on_opponent_serve:
+          type: integer
+          description: points lost by participant after opponent served on this point
+        game_points_won_on_own_serve:
+          type: integer
+          description: game points won by participant after participant served on this point
+        game_points_lost_on_own_serve:
+          type: integer
+          description: game points lost by participant after participant served on this point
+        game_points_opponent_serve_faced:
+          type: integer
+          description: Number of game points the participant faced in which the opponent served
+        game_points_won_opponent_serve:
+          type: integer
+          description: Number of Game points the participant won in which the opponent served
+        deciding_games_won_in_won_matches:
+          type: integer
+          description: The number of games that were won by the participant that resulted in a match victory
+        deciding_games_lost_in_won_matches:
+          type: integer
+          description: 'The number of deciding games that were lost by the participant, in which the participant ultimatlely achieved a match victory'
+        deciding_games_won_in_lost_matches:
+          type: integer
+          description: 'The number of deciding games that were won by the participant, in which the participant lost the match'
+        deciding_games_lost_in_lost_matches:
+          type: integer
+          description: 'The number of deciding games that were lost by the participant, in which the participant lost the match'
+        games_won_where_game_point_was_achieved:
+          type: integer
+          description: Number of games where a game point was reached by the participany and the participant won
+        games_lost_where_game_point_was_achieved:
+          type: integer
+          description: Number of games where a game point was reached by the participany and the participant lost
+        tie_breaking_points_won:
+          type: integer
+          description: 'The number of points won by the participant where the current game score was at a tie, not including 0-0'
+        tie_breaking_points_lost:
+          type: integer
+          description: 'The number of points lost by the participant where the current game score was at a tie, not including 0-0'
+        most_consecutive_points_won:
+          type: integer
+          description: the largest number of consecutive points won by the participant
+        most_consecutive_points_lost:
+          type: integer
+          description: The largest numbner of consecutive points lost by the participant
+        greatest_lead:
+          type: integer
+          description: The largest number of points the participant lead the opponent by during the specified timeframe and entity
+        greatest_lead_against:
+          type: integer
+          description: The largest number of points an opponent lead the participant by during the specified timeframe and entity
+        greatest_deficit_overcome:
+          type: integer
+          description: 'The largest number of points the participant was trailing their oponent, in which they ultimately won the game'
+        yellow_cards_against:
+          type: integer
+          description: Number of yellow cards called against the participant
+        challenges_requested:
+          type: integer
+          description: Number of challenges the participant requested
+        challenges_successful:
+          type: integer
+          description: |
+            Number of challenges the participant won
+        challenges_failed:
+          type: integer
+          description: Number of challenged the participant lost
+        timeouts:
+          type: integer
+          description: Number of timeouts the participant took
+        medical_timeouts:
+          type: integer
+          description: Number of medical timeouts taken due to the participants injury
+        points_lost:
+          type: integer
+          description: Total points scored against a participant during the specific timeframe and entities
+  securitySchemes:
+    wtt-api-token:
+      name: API Key
+      type: apiKey
+      in: header
+      description: WTT should provide an API token for PJD to use on all request for authentication
+security:
+  - wtt-api-token: []
