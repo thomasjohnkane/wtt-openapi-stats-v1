@@ -1,0 +1,449 @@
+openapi: 3.0.0
+info:
+  title: WTT CMS API
+  version: '1.0'
+  description: Mock API for handling CMS Content
+  contact:
+    name: Thomas Kane
+    url: pumpjackdataworks.com
+    email: thomas@pumpjackdataworks.com
+  termsOfService: 'https://pumpjackdataworks.com/privacy'
+servers:
+  - url: 'http://localhost:3000'
+tags:
+  - name: photo
+    description: Everything related to photos
+  - name: video
+    description: Everything related to videos
+  - name: post
+    description: Everything related to posts
+  - name: gallery
+    description: Everything related to galleries
+paths:
+  /posts:
+    get:
+      summary: Posts
+      tags:
+        - post
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Post'
+      operationId: get-posts
+      description: Get list of all published posts ordered by published_at DESC
+  '/posts/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Post
+      tags:
+        - post
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Post'
+        '422':
+          description: Unprocessable Entity (WebDAV)
+      operationId: get-posts-id
+      description: Get a single Post object by ID
+  /video:
+    get:
+      summary: Videos
+      tags:
+        - video
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Video'
+      operationId: get-video
+      description: Get list of all published videos ordered by published_at DESC
+  '/video/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Video
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Video'
+        '422':
+          description: Unprocessable Entity (WebDAV)
+      operationId: get-video-id
+      description: Get a single Video object by ID
+      tags:
+        - video
+  /photos:
+    get:
+      summary: Photos
+      tags:
+        - photo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Photo'
+      operationId: get-photos
+      description: Get list of all published photos ordered by published_at DESC
+  '/photos/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Photo
+      tags:
+        - photo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Photo'
+        '422':
+          description: Unprocessable Entity (WebDAV)
+      operationId: get-photos-id
+      description: Get a single Photo object by ID
+  /gallery:
+    get:
+      summary: Galleries
+      tags:
+        - gallery
+        - photo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Gallery'
+      operationId: get-gallery
+      description: Get list of all published galleries ordered by published_at DESC
+  '/gallery/{id}':
+    parameters:
+      - schema:
+          type: string
+        name: id
+        in: path
+        required: true
+    get:
+      summary: Gallery
+      tags:
+        - gallery
+        - photo
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Gallery'
+        '422':
+          description: Unprocessable Entity (WebDAV)
+      operationId: get-gallery-id
+      description: Get a single Gallery object by ID
+components:
+  schemas:
+    Video:
+      title: Video
+      type: object
+      description: 'A media object with a type of video, to be included in a post or accessed directly'
+      properties:
+        id:
+          type: string
+        format:
+          type: string
+          description: file format
+        category:
+          $ref: '#/components/schemas/Category'
+        created_at:
+          type: string
+          description: created at time
+        published_at:
+          type: string
+          description: Null is unpublished
+        status:
+          type: string
+          description: 'Published, Hidden, Draft'
+        title:
+          type: string
+          description: Long form name of post
+        short_title:
+          type: string
+          description: Short form name of post
+        slug:
+          type: string
+          description: Unique URI for object
+        players:
+          type: array
+          description: 'Array of player ids, nullable'
+          items: {}
+        teaser:
+          type: string
+          description: Content that will show in feed
+        default_image:
+          $ref: '#/components/schemas/Photo'
+      required:
+        - id
+        - format
+        - created_at
+        - status
+        - title
+        - short_title
+        - slug
+        - teaser
+        - default_image
+    Photo:
+      title: Photo
+      type: object
+      description: Attributes required in a photo object
+      properties:
+        id:
+          type: string
+        caption:
+          type: string
+        attribution:
+          type: string
+          description: The name of the photographer or company credited with the phone
+        created_at:
+          type: string
+          description: created at time
+        published_at:
+          type: string
+          description: Null is unpublished
+        status:
+          type: string
+          description: 'Published, Hidden, Draft'
+        captured_at:
+          type: string
+          description: Datetime that the photo was captured (possible scraped from exif data)
+        players:
+          type: array
+          description: Array of player IDs of players in the photo
+          items:
+            type: string
+      required:
+        - id
+        - caption
+        - created_at
+        - status
+    Quote:
+      title: Quote
+      type: object
+      description: A basic object representing a quoted statement
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          description: created at time
+        published_at:
+          type: string
+          description: Null is unpublished
+        status:
+          type: string
+          description: 'Published, Hidden, Draft'
+        player:
+          type: string
+          description: Single player ID
+        body:
+          type: string
+          description: Content that will show in feed
+        default_image:
+          $ref: '#/components/schemas/Photo'
+        attribution:
+          type: string
+          description: The person that is credit for creating the quote
+      required:
+        - id
+        - created_at
+        - status
+        - body
+        - default_image
+    Gallery:
+      title: Gallery
+      type: object
+      description: A group of photos with additional data
+      properties:
+        id:
+          type: string
+        photos:
+          type: array
+          description: 1 or more photos
+          items:
+            $ref: '#/components/schemas/Photo'
+        title:
+          type: string
+        teaser:
+          type: string
+        created_at:
+          type: string
+          description: created at time
+        published_at:
+          type: string
+          description: Null is unpublished
+        status:
+          type: string
+          description: 'Published, Hidden, Draft'
+        category:
+          $ref: '#/components/schemas/Category'
+        slug:
+          type: string
+          description: Unique URI for object
+      required:
+        - id
+        - photos
+        - title
+        - teaser
+        - created_at
+        - status
+        - category
+        - slug
+    Post:
+      title: Post
+      type: object
+      description: A generic post that encompasses media and content
+      properties:
+        id:
+          type: string
+        size:
+          type: string
+          description: 's, m, l, xl'
+        category:
+          $ref: '#/components/schemas/Category'
+        created_at:
+          type: string
+          description: created at time
+        published_at:
+          type: string
+          description: Null is unpublished
+        author:
+          $ref: '#/components/schemas/Author'
+        status:
+          type: string
+          description: 'Published, Hidden, Draft'
+        title:
+          type: string
+          description: Long form name of post
+        short_title:
+          type: string
+          description: Short form name of post
+        slug:
+          type: string
+        players:
+          type: array
+          description: 'Array of player ids, nullable'
+          items: {}
+        teaser:
+          type: string
+          description: Content that will show in feed
+        body:
+          type: string
+          description: Full content of post. Reference WP Guttenberg for data type and structure. Media should be referenced in the body.
+        default_image:
+          $ref: '#/components/schemas/Photo'
+        video:
+          $ref: '#/components/schemas/Video'
+        quote:
+          $ref: '#/components/schemas/Quote'
+        aside:
+          $ref: '#/components/schemas/Aside'
+      required:
+        - id
+        - created_at
+        - author
+        - status
+        - title
+        - slug
+        - teaser
+        - body
+        - default_image
+    Category:
+      title: Category
+      type: object
+      description: Grouping for object classification
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        description:
+          type: string
+      required:
+        - id
+        - name
+    Author:
+      title: Author
+      type: object
+      description: The user that created the object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+      required:
+        - id
+        - name
+    Aside:
+      title: Aside
+      type: object
+      description: A short editorial comment
+      properties:
+        id:
+          type: string
+        title:
+          type: string
+        body:
+          type: string
+        created_at:
+          type: string
+        published_at:
+          type: string
+        status:
+          type: string
+          description: 'Published, Hidden, Draft'
+      required:
+        - id
+        - title
+        - body
+        - created_at
+        - status
+  securitySchemes:
+    wtt-api-token:
+      name: API Key
+      type: apiKey
+      in: query
+security:
+  - wtt-api-token: []
